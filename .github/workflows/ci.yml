@@ -1,0 +1,41 @@
+# Intégration continue : à chaque push ou pull request sur GitHub,
+#   1. vérifie les bases de test et lance les tests unitaires (pytest) ;
+#   2. démarre toute la pile avec Docker Compose et lance les tests
+#      de bout en bout à travers Kong (tests/e2e_kong.sh).
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  tests-unitaires:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Installer les dépendances
+        run: pip install -r requirements-dev.txt
+      - name: Vérifier les bases de test
+        run: python scripts/init_data.py --check
+      - name: Tests unitaires et contrats d'API
+        run: pytest -v tests/
+
+  tests-bout-en-bout:
+    runs-on: ubuntu-22.04
+    needs: tests-unitaires
+    steps:
+      - uses: actions/checkout@v4
+      - name: Démarrer la pile (Kong + 4 services)
+        run: docker compose up -d --build --wait
+      - name: Tests de bout en bout à travers Kong
+        run: bash tests/e2e_kong.sh
+      - name: Journaux en cas d'échec
+        if: failure()
+        run: docker compose logs
+      - name: Arrêter la pile
+        if: always()
+        run: docker compose down

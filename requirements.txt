@@ -1,0 +1,6 @@
+# Versions figées : celles avec lesquelles les tests ont été validés.
+fastapi==0.147.0
+uvicorn==0.53.0
+httpx==0.28.1
+starlette==1.6.0
+pydantic==2.13.5

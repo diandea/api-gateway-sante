@@ -1,0 +1,86 @@
+# ---------------------------------------------------------------------------
+# Configuration déclarative de Kong (mode DB-less : pas de base de données,
+# toute la configuration est dans ce fichier, chargé au démarrage).
+#
+#   Client ──► Kong :8000 ──► aggregator / structures / patients / indicateurs
+#
+# Vocabulaire Kong :
+#   service : une API en amont (upstream) — son adresse + ses délais d'attente
+#   route   : la règle qui associe une requête entrante (chemin, méthode) à un service
+#   plugin  : un comportement ajouté sur le trafic (corrélation, logs, quotas...)
+# ---------------------------------------------------------------------------
+_format_version: "3.0"
+_transform: true
+
+services:
+  # --- Composant d'agrégation : le point d'entrée « tableau de bord » -------
+  - name: aggregator-service
+    url: http://aggregator:8000
+    connect_timeout: 2000   # ms pour établir la connexion TCP
+    read_timeout: 5000      # ms max entre deux lectures — SUPÉRIEUR au budget
+    write_timeout: 5000     #   global de l'agrégateur (3 s) : c'est l'agrégateur
+    retries: 0              #   qui répond le premier, avec un message précis.
+    routes:
+      - name: dashboard-route
+        paths: ["/api/v1/dashboard"]
+        methods: ["GET"]
+        strip_path: false   # le chemin est transmis tel quel à l'agrégateur
+    plugins:
+      - name: rate-limiting
+        config:
+          minute: 120
+          policy: local
+
+  # --- Les trois API métier, aussi exposées derrière la même porte ----------
+  - name: structures-service
+    url: http://structures:8000
+    connect_timeout: 2000
+    read_timeout: 3000
+    write_timeout: 3000
+    retries: 1
+    routes:
+      - name: structures-route
+        paths: ["/api/v1/structures"]
+        methods: ["GET"]
+        strip_path: false
+
+  - name: patients-service
+    url: http://patients:8000
+    connect_timeout: 2000
+    read_timeout: 3000
+    write_timeout: 3000
+    retries: 1
+    routes:
+      - name: patients-route
+        paths: ["/api/v1/patients"]
+        methods: ["GET"]
+        strip_path: false
+
+  - name: indicateurs-service
+    url: http://indicateurs:8000
+    connect_timeout: 2000
+    read_timeout: 3000
+    write_timeout: 3000
+    retries: 1
+    routes:
+      - name: indicateurs-route
+        paths: ["/api/v1/indicateurs"]
+        methods: ["GET"]
+        strip_path: false
+
+# --- Plugins globaux (appliqués à toutes les routes) -------------------------
+plugins:
+  # Génère un identifiant unique par requête (sauf si le client en fournit
+  # déjà un), le transmet au service en aval ET le renvoie au client.
+  - name: correlation-id
+    config:
+      header_name: X-Correlation-ID
+      generator: uuid
+      echo_downstream: true
+
+  # Journal structuré (JSON) de chaque requête traversant la passerelle :
+  # route, service, statut, latences Kong / upstream, en-têtes (dont X-Correlation-ID).
+  - name: file-log
+    config:
+      path: /dev/stdout
+      reopen: false

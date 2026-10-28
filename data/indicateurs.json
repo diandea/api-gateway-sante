@@ -1,0 +1,98 @@
+[
+  {
+    "structure_id": 1,
+    "periode": "2026-08",
+    "consultations": 9120,
+    "hospitalisations": 1840,
+    "accouchements": 410,
+    "deces": 37,
+    "cas_paludisme": 2210,
+    "taux_occupation_lits": 86.4,
+    "duree_moyenne_sejour_jours": 6.1,
+    "taux_couverture_vaccinale": null
+  },
+  {
+    "structure_id": 1,
+    "periode": "2026-09",
+    "consultations": 9655,
+    "hospitalisations": 1912,
+    "accouchements": 428,
+    "deces": 41,
+    "cas_paludisme": 2540,
+    "taux_occupation_lits": 89.2,
+    "duree_moyenne_sejour_jours": 6.4,
+    "taux_couverture_vaccinale": null
+  },
+  {
+    "structure_id": 2,
+    "periode": "2026-08",
+    "consultations": 4310,
+    "hospitalisations": 702,
+    "accouchements": 233,
+    "deces": 12,
+    "cas_paludisme": 1405,
+    "taux_occupation_lits": 74.0,
+    "duree_moyenne_sejour_jours": 4.8,
+    "taux_couverture_vaccinale": 91.5
+  },
+  {
+    "structure_id": 2,
+    "periode": "2026-09",
+    "consultations": 4580,
+    "hospitalisations": 745,
+    "accouchements": 241,
+    "deces": 15,
+    "cas_paludisme": 1630,
+    "taux_occupation_lits": 78.3,
+    "duree_moyenne_sejour_jours": 5.0,
+    "taux_couverture_vaccinale": 92.1
+  },
+  {
+    "structure_id": 3,
+    "periode": "2026-08",
+    "consultations": 2105,
+    "hospitalisations": 188,
+    "accouchements": 96,
+    "deces": 2,
+    "cas_paludisme": 760,
+    "taux_occupation_lits": 62.5,
+    "duree_moyenne_sejour_jours": 3.2,
+    "taux_couverture_vaccinale": 88.0
+  },
+  {
+    "structure_id": 3,
+    "periode": "2026-09",
+    "consultations": 2290,
+    "hospitalisations": 201,
+    "accouchements": 102,
+    "deces": 0,
+    "cas_paludisme": 845,
+    "taux_occupation_lits": 66.0,
+    "duree_moyenne_sejour_jours": 3.4,
+    "taux_couverture_vaccinale": 89.4
+  },
+  {
+    "structure_id": 4,
+    "periode": "2026-08",
+    "consultations": 1340,
+    "hospitalisations": 0,
+    "accouchements": 38,
+    "deces": 0,
+    "cas_paludisme": 512,
+    "taux_occupation_lits": null,
+    "duree_moyenne_sejour_jours": null,
+    "taux_couverture_vaccinale": 95.2
+  },
+  {
+    "structure_id": 4,
+    "periode": "2026-09",
+    "consultations": 1415,
+    "hospitalisations": 0,
+    "accouchements": 41,
+    "deces": 0,
+    "cas_paludisme": 598,
+    "taux_occupation_lits": null,
+    "duree_moyenne_sejour_jours": null,
+    "taux_couverture_vaccinale": 96.0
+  }
+]

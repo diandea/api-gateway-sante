@@ -1,0 +1,399 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Composant d'agrégation — Dashboard santé",
+    "description": "Rassemble structures, indicateurs et patients en une réponse unique.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "technique"
+        ],
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/_chaos": {
+      "get": {
+        "tags": [
+          "technique"
+        ],
+        "summary": "Get Chaos",
+        "operationId": "get_chaos__chaos_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "technique"
+        ],
+        "summary": "Set Chaos",
+        "operationId": "set_chaos__chaos_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChaosConfig"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dashboard/structures/{structure_id}": {
+      "get": {
+        "summary": "Tableau de bord d'une structure sanitaire",
+        "operationId": "dashboard_structure_api_v1_dashboard_structures__structure_id__get",
+        "parameters": [
+          {
+            "name": "structure_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Structure Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "COMPLET, ou PARTIEL si indicateurs et/ou patients sont INDISPONIBLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Dashboard"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ECHEC : structure inconnue (STRUCTURE_NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Dashboard"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "ECHEC : API structures indisponible (PRIMARY_SOURCE_UNAVAILABLE)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Dashboard"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ChaosConfig": {
+        "properties": {
+          "mode": {
+            "type": "string",
+            "title": "Mode",
+            "default": "normal"
+          },
+          "delay": {
+            "type": "number",
+            "title": "Delay",
+            "default": 5.0
+          }
+        },
+        "type": "object",
+        "title": "ChaosConfig"
+      },
+      "Dashboard": {
+        "properties": {
+          "structure_id": {
+            "type": "integer",
+            "title": "Structure Id"
+          },
+          "statut_agregation": {
+            "type": "string",
+            "enum": [
+              "COMPLET",
+              "PARTIEL",
+              "ECHEC"
+            ],
+            "title": "Statut Agregation"
+          },
+          "correlation_id": {
+            "type": "string",
+            "title": "Correlation Id"
+          },
+          "genere_le": {
+            "type": "string",
+            "title": "Genere Le",
+            "description": "Horodatage ISO 8601 (UTC)"
+          },
+          "structure": {
+            "$ref": "#/components/schemas/Section"
+          },
+          "indicateurs": {
+            "$ref": "#/components/schemas/Section"
+          },
+          "patients": {
+            "$ref": "#/components/schemas/Section"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/Source"
+            },
+            "type": "array",
+            "title": "Sources"
+          },
+          "erreur": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Erreur"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Présent si statut_agregation = ECHEC"
+          }
+        },
+        "type": "object",
+        "required": [
+          "structure_id",
+          "statut_agregation",
+          "correlation_id",
+          "genere_le",
+          "structure",
+          "indicateurs",
+          "patients",
+          "sources"
+        ],
+        "title": "Dashboard"
+      },
+      "Erreur": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code",
+            "description": "TIMEOUT | SERVICE_UNREACHABLE | UPSTREAM_ERROR | INVALID_RESPONSE | STRUCTURE_NOT_FOUND | PRIMARY_SOURCE_UNAVAILABLE"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "Erreur"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Section": {
+        "properties": {
+          "statut": {
+            "type": "string",
+            "enum": [
+              "DISPONIBLE",
+              "ABSENT",
+              "INDISPONIBLE"
+            ],
+            "title": "Statut",
+            "description": "DISPONIBLE : le service a répondu (un 0 ou un null dans les données est réel). ABSENT : le service a répondu 404, donnée réellement nulle. INDISPONIBLE : le service n'a pas pu répondre, valeur inconnue."
+          },
+          "donnees": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Donnees",
+            "description": "Réponse du service, null si ABSENT ou INDISPONIBLE"
+          },
+          "motif": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motif",
+            "description": "Présent si ABSENT : détail du 404"
+          },
+          "erreur": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Erreur"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Présent si INDISPONIBLE"
+          }
+        },
+        "type": "object",
+        "required": [
+          "statut",
+          "donnees"
+        ],
+        "title": "Section"
+      },
+      "Source": {
+        "properties": {
+          "service": {
+            "type": "string",
+            "title": "Service"
+          },
+          "statut": {
+            "type": "string",
+            "enum": [
+              "DISPONIBLE",
+              "ABSENT",
+              "INDISPONIBLE"
+            ],
+            "title": "Statut"
+          },
+          "http_status": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Http Status"
+          },
+          "duree_ms": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duree Ms"
+          }
+        },
+        "type": "object",
+        "required": [
+          "service",
+          "statut",
+          "http_status",
+          "duree_ms"
+        ],
+        "title": "Source"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

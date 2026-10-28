@@ -1,0 +1,74 @@
+# Lancement : docker compose up -d --build --wait
+# Point d'entrée unique pour les clients : http://localhost:8000 (Kong)
+#
+# Volumes :
+#   ./data      -> /app/data            bases de test JSON (lecture seule)
+#   ./kong      -> /kong/declarative    configuration déclarative de Kong
+# Les bases se (re)créent avec : python3 scripts/init_data.py
+
+x-api: &api
+  restart: unless-stopped            # redémarre seul après un reboot de la machine
+  environment:
+    DATA_DIR: /app/data
+
+services:
+
+  structures:
+    <<: *api
+    build: { context: ., args: { SERVICE_DIR: services/structures } }
+    container_name: structures-api
+    volumes: ["./data/structures.json:/app/data/structures.json:ro"]
+    ports: ["9001:8000"]          # accès direct : tests et mode chaos uniquement
+
+  patients:
+    <<: *api
+    build: { context: ., args: { SERVICE_DIR: services/patients } }
+    container_name: patients-api
+    volumes: ["./data/patients.json:/app/data/patients.json:ro"]
+    ports: ["9002:8000"]
+
+  indicateurs:
+    <<: *api
+    build: { context: ., args: { SERVICE_DIR: services/indicateurs } }
+    container_name: indicateurs-api
+    volumes: ["./data/indicateurs.json:/app/data/indicateurs.json:ro"]
+    ports: ["9003:8000"]
+
+  aggregator:
+    build: { context: ., args: { SERVICE_DIR: aggregator } }
+    container_name: aggregator
+    restart: unless-stopped
+    environment:
+      STRUCTURES_URL: http://structures:8000
+      PATIENTS_URL: http://patients:8000
+      INDICATEURS_URL: http://indicateurs:8000
+      UPSTREAM_TIMEOUT: "2.0"     # délai par service (s)
+      GLOBAL_TIMEOUT: "3.0"       # budget total de l'agrégation (s)
+    ports: ["9000:8000"]
+    # Pas de depends_on strict sur les API : l'agrégateur doit démarrer
+    # et répondre (partiellement) même si une API est arrêtée.
+
+  kong:
+    image: kong:3.9
+    container_name: kong
+    restart: unless-stopped
+    environment:
+      KONG_DATABASE: "off"                              # mode DB-less
+      KONG_DECLARATIVE_CONFIG: /kong/declarative/kong.yml
+      KONG_PROXY_LISTEN: 0.0.0.0:8000
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+      KONG_PROXY_ACCESS_LOG: "off"                      # remplacé par le plugin file-log (JSON)
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+    volumes:
+      - ./kong:/kong/declarative:ro
+    ports:
+      - "8000:8000"   # proxy : LE point d'entrée des clients
+      - "8001:8001"   # API d'administration (lecture de la config)
+    depends_on: [aggregator]
+    healthcheck:
+      test: ["CMD", "kong", "health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5

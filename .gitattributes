@@ -1,0 +1,6 @@
+# Fins de ligne Unix pour tous les fichiers texte, même clonés sous Windows :
+# les scripts shell, le YAML de Kong et le Vagrantfile en dépendent.
+* text=auto eol=lf
+*.pptx binary
+*.pdf binary
+*.png binary

@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "code": "CHU-YO",
+    "nom": "Centre Hospitalier Universitaire Yalgado Ouédraogo",
+    "type": "CHU",
+    "region": "Centre",
+    "district": "Baskuy",
+    "ville": "Ouagadougou",
+    "capacite_lits": 750,
+    "telephone": "+226 25 00 00 01",
+    "statut": "public"
+  },
+  {
+    "id": 2,
+    "code": "CHR-KDG",
+    "nom": "Centre Hospitalier Régional de Koudougou",
+    "type": "CHR",
+    "region": "Centre-Ouest",
+    "district": "Koudougou",
+    "ville": "Koudougou",
+    "capacite_lits": 280,
+    "telephone": "+226 25 00 00 02",
+    "statut": "public"
+  },
+  {
+    "id": 3,
+    "code": "CMA-PSY",
+    "nom": "Centre Médical avec Antenne chirurgicale de Pissy",
+    "type": "CMA",
+    "region": "Centre",
+    "district": "Boulmiougou",
+    "ville": "Ouagadougou",
+    "capacite_lits": 60,
+    "telephone": "+226 25 00 00 03",
+    "statut": "public"
+  },
+  {
+    "id": 4,
+    "code": "CSPS-TGH",
+    "nom": "Centre de Santé et de Promotion Sociale de Tanghin",
+    "type": "CSPS",
+    "region": "Centre",
+    "district": "Nongr-Massom",
+    "ville": "Ouagadougou",
+    "capacite_lits": 0,
+    "telephone": "+226 25 00 00 04",
+    "statut": "public"
+  },
+  {
+    "id": 5,
+    "code": "CSPS-NEW",
+    "nom": "CSPS de Saaba (ouverture récente)",
+    "type": "CSPS",
+    "region": "Plateau-Central",
+    "district": "Saaba",
+    "ville": "Saaba",
+    "capacite_lits": 0,
+    "telephone": null,
+    "statut": "public"
+  }
+]
