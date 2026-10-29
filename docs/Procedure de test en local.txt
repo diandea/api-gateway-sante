@@ -1,0 +1,101 @@
+
+
+**Procédure**
+
+1. Ouvrez deux fenêtres PowerShell. Avec Windows Terminal, vous pouvez aussi diviser l'écran en deux avec **Alt + Maj + D**, ce qui est pratique pour la démonstration.
+2. Dans chacune, allez dans le dossier du projet, connectez-vous et entrez dans `/vagrant` :
+   ```powershell
+   cd C:\Users\LENOVO\Downloads\MASTER1\service_web\TP\api-gateway-sante
+   vagrant ssh
+   ```
+   ```bash
+   cd /vagrant
+   ```
+3. **Terminal 1 (journaux)** : lancez cette commande, puis ne touchez plus à ce terminal.
+   ```bash
+   docker compose logs -f --tail 0 aggregator
+   ```
+   `--tail 0` n'affiche que les nouvelles lignes, ce qui garde l'écran propre pendant la démonstration. `Ctrl + C` arrête l'affichage.
+4. **Terminal 2 (requêtes)** : tapez ici les commandes du scénario (`curl …`, `/_chaos`, `docker compose stop …`).
+
+Chaque requête du terminal 2 fait apparaître ses lignes de journal JSON dans le terminal 1. On y voit l'identifiant de corrélation, le service appelé, le statut et la durée.
+
+**Pour suivre les 5 composants à la fois**, remplacez `aggregator` par rien du tout :
+```bash
+docker compose logs -f --tail 0
+```
+Chaque ligne commence alors par le nom de son conteneur (`kong`, `aggregator`, `patients-api`…). C'est très parlant pour l'étape 7 sur l'identifiant de corrélation.
+
+Faites tout le scénario depuis la VM, pas depuis PowerShell sur Windows. Le Vagrantfile ne rend accessibles depuis Windows que les ports 8000, 8001 et 9000. Les ports 9001 à 9003, utilisés pour simuler les pannes avec `/_chaos`, ne sont joignables que depuis la VM.
+
+
+Les 5 conteneurs servent seulement au point 7. Pour celui-ci, on ne suit pas le flux en direct : on fait une recherche ponctuelle avec `grep`.
+
+## Les commandes du terminal 2
+
+**Etape1. Point d'entrée unique** : affiche les 4 services déclarés dans Kong.
+```bash
+curl -s localhost:8001/services | jq '.data[].name'
+```
+
+**Etape2. Réponse complète**
+```bash
+curl -s localhost:8000/api/v1/dashboard/structures/1 | jq
+```
+Montrez `statut_agregation: "COMPLET"`, puis le bloc `sources` en bas.
+
+**Etape3. Zéros réels**
+```bash
+curl -s localhost:8000/api/v1/dashboard/structures/4 | jq '.indicateurs'
+curl -s localhost:8000/api/v1/dashboard/structures/5 | jq '{statut_agregation, total_patients: .patients.donnees.total, indicateurs}'
+```
+Points à montrer :
+- Structure 4 : `deces: 0` et `taux_occupation_lits: null` avec la raison `NON_APPLICABLE`.
+- Structure 5 : `COMPLET`, 0 patient et indicateurs `ABSENT`. Ce n'est pas une panne.
+
+**Etape4. Erreur partielle**
+```bash
+curl -s -X POST localhost:9002/_chaos -H 'Content-Type: application/json' -d '{"mode":"error"}'
+curl -s localhost:8000/api/v1/dashboard/structures/1 | jq '{statut_agregation, patients}'
+curl -s -X POST localhost:9002/_chaos -H 'Content-Type: application/json' -d '{"mode":"normal"}'
+```
+Résultat attendu : `PARTIEL` avec `UPSTREAM_ERROR`. Dans le terminal 1, une ligne `WARNING` apparaît pour l'appel aux patients.
+
+**Etape5. Délai dépassé**
+```bash
+curl -s -X POST localhost:9003/_chaos -H 'Content-Type: application/json' -d '{"mode":"slow","delay":5}'
+time curl -s localhost:8000/api/v1/dashboard/structures/1 | jq '{statut_agregation, indicateurs}'
+curl -s -X POST localhost:9003/_chaos -H 'Content-Type: application/json' -d '{"mode":"normal"}'
+```
+Montrez `TIMEOUT`, et la ligne `real 0m2.0…s` affichée par `time` : le service met 5 s, mais l'agrégateur répond après 2 s.
+
+**Etape6. Service arrêté**
+```bash
+docker compose stop indicateurs
+curl -s localhost:8000/api/v1/dashboard/structures/1 | jq '{statut_agregation, indicateurs}'
+docker compose start indicateurs
+
+docker compose stop structures
+curl -si localhost:8000/api/v1/dashboard/structures/1 | head -n 1
+curl -s localhost:8000/api/v1/dashboard/structures/1 | jq '{statut_agregation, erreur}'
+docker compose start structures
+```
+Résultats attendus :
+- Indicateurs arrêtés : `PARTIEL` avec `SERVICE_UNREACHABLE`.
+- Structures arrêtée : `HTTP/1.1 503` et `PRIMARY_SOURCE_UNAVAILABLE`.
+
+Après `start`, laissez environ 5 secondes au service pour redémarrer.
+
+**Etape7. Corrélation**
+
+D'abord, l'identifiant créé par Kong :
+```bash
+curl -si localhost:8000/api/v1/dashboard/structures/1 | grep -i x-correlation-id
+```
+Ensuite, avec un identifiant facile à taper, que Kong conserve tel quel :
+```bash
+curl -s -H "X-Correlation-ID: demo-soutenance" localhost:8000/api/v1/dashboard/structures/1 > /dev/null
+docker compose logs | grep demo-soutenance
+```
+La même requête apparaît dans `kong`, `aggregator`, `structures-api`, `indicateurs-api` et `patients-api`. C'est la preuve qu'on peut suivre une requête à travers tout le système.
+

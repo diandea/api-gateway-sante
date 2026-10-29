@@ -8,7 +8,7 @@ patients fictifs, indicateurs agrégés) et un composant d'agrégation. Un seul 
 et le résumé de ses patients. Si un service est lent ou en panne, la réponse reste utile et
 indique précisément ce qui manque.
 
-**Auteurs :** [noms des membres du groupe] · **Enseignant :** [nom de l'enseignant]
+**Auteurs :** [DIANDE Abdou Nassiro, OUEDRAOGO Wend-Kouni Basile, OUEDRAOGO Sanata, WANDAOGO Salif, TIONON Filwende Michael] · **Enseignant :** [KY Fadel Oumar]
 
 ---
 
@@ -137,7 +137,7 @@ séparément dans **[docs/INSTALLATION.md](docs/INSTALLATION.md)**.
 ### Option A — Docker Compose
 
 ```bash
-git clone https://github.com/<compte>/api-gateway-sante.git
+git clone https://github.com/diandea/api-gateway-sante.git
 cd api-gateway-sante
 docker compose up -d --build --wait
 ```
@@ -149,7 +149,7 @@ docker compose up -d --build --wait
 Dans PowerShell (Windows) ou un terminal (macOS, Linux) :
 
 ```bash
-git clone https://github.com/<compte>/api-gateway-sante.git
+git clone https://github.com/diandea/api-gateway-sante.git
 cd api-gateway-sante
 vagrant up
 ```
