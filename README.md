@@ -102,7 +102,9 @@ api-gateway-sante/
 ├── docs/
 │   ├── INSTALLATION.md            installation de Docker, Vagrant, VirtualBox, Git
 │   ├── RESULTATS_ATTENDUS.md      résultats attendus des tests et de la démonstration
-│   └── presentation.pptx          présentation de la soutenance
+│   ├── Procedure de test en local.txt   procédure de test en local
+│   ├── Groupe4_Présentation_API_Gateway_agregation_sante.pptx   présentation
+│   └── Groupe4_Rapport_API_Gateway_agregation_sante.pdf         rapport
 ├── Dockerfile                     image commune des 4 services Python
 ├── docker-compose.yml             les 5 conteneurs, leurs volumes et leur réseau
 ├── Vagrantfile                    VM Ubuntu 22.04 prête à l'emploi (option B)
@@ -294,5 +296,7 @@ de bout en bout à travers Kong. Le résultat est visible dans l'onglet **Action
 
 ## 12. Documents du projet
 
-- `docs/presentation.pptx` — présentation de la soutenance
-- `docs/rapport.pdf` — rapport du projet (conception, guide de démonstration, sorties obtenues)
+- [Présentation de la soutenance](docs/Groupe4_Présentation_API_Gateway_agregation_sante.pptx) — `docs/Groupe4_Présentation_API_Gateway_agregation_sante.pptx`
+- [Rapport du projet](docs/Groupe4_Rapport_API_Gateway_agregation_sante.pdf) — `docs/Groupe4_Rapport_API_Gateway_agregation_sante.pdf` (conception, guide de démonstration, sorties obtenues)
+- [Procédure de test en local](<docs/Procedure de test en local.txt>) — `docs/Procedure de test en local.txt`
+- [Installation des outils](docs/INSTALLATION.md) et [résultats attendus](docs/RESULTATS_ATTENDUS.md)
